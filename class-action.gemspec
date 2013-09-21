@@ -8,8 +8,8 @@ Gem::Specification.new do |spec|
   spec.version       = Class::Action::VERSION
   spec.authors       = ["Joost Lubach"]
   spec.email         = ["joost@yoazt.com"]
-  spec.description   = %q{TODO: Write a gem description}
-  spec.summary       = %q{TODO: Write a gem summary}
+  spec.description   = %q{Allows you to write controller actions as classes, rather than methods.}
+  spec.summary       = spec.description
   spec.homepage      = ""
   spec.license       = "MIT"
 
