@@ -1,29 +1,5 @@
-# Class-based ("command-pattern") approach to controller actions. Derive your action
-# from this class, and implement its {#execute} method.
-#
-# You can access all methods and instance variables from the controller,
-# and you can define extra helper methods, which will only be made available if this
-# action is executed.
-#
-# == Usage
-#
-# First, create a class that handles your action, derive it from {ClassAction::Action}}
-# and at a minimum implement the {#execute} method.
-#
-#   class AccountsController
-#
-#     include ClassAction
-#     class_action :index
-#
-#     class Index < ClassAction::Action
-#
-#       def execute
-#         load_accounts            # Defined in the controller
-#         respond_with @accounts   # Also created in the controller.
-#       end
-#
-#     end
-#   end
+require 'active_support/inflector'
+
 module ClassAction
 
   class ActionNotAvailable < RuntimeError
@@ -37,7 +13,9 @@ module ClassAction
 
     def setup(target)
       target.class_eval <<-RUBY, __FILE__, __LINE__+1
-        attr_internal_reader :class_action
+        def class_action
+          @_class_action
+        end
       RUBY
     end
   end
@@ -71,17 +49,13 @@ module ClassAction
 
   def _execute_class_action(name, klass)
     @_class_action = klass.new(self)
-    raise ActionNotAvailable unless class_action.available?
-
-    # Execute the action by running all public methods in order.
-    class_action.public_methods.each do |method|
-      class_action.send method
-    end
-
-    # Copy any assigns back to the controller.
-    class_action.send :copy_assigns_to_controller
+    @_class_action._execute
   end
 
+end
+
+if defined?(AbstractController::Rendering::DEFAULT_PROTECTED_INSTANCE_VARIABLES)
+  AbstractController::Rendering::DEFAULT_PROTECTED_INSTANCE_VARIABLES << '@_class_action'
 end
 
 require 'class_action/version'

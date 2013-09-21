@@ -4,8 +4,52 @@
 		"selected_items":
 		[
 			[
+				"insta",
+				"instance_variable_get"
+			],
+			[
+				"instanv",
+				"instance_variable_set"
+			],
+			[
 				"instan",
-				"instance_variables"
+				"instance_eval"
+			],
+			[
+				"incrase",
+				"increase_var"
+			],
+			[
+				"act",
+				"action_class"
+			],
+			[
+				"Class",
+				"ClassAction"
+			],
+			[
+				"method",
+				"method_added_by_class_action"
+			],
+			[
+				"_",
+				"_class_action"
+			],
+			[
+				"copy",
+				"copy_assigns_to_controller"
+			],
+			[
+				"E",
+				"EXPOSED_CONTROLLER_METHODS"
+			],
+			[
+				"ClassA",
+				"ClassActionTestController"
+			],
+			[
+				"controller",
+				"controller_class"
 			],
 			[
 				"copy_ass",
@@ -470,55 +514,27 @@
 			[
 				"context",
 				"contextButtonTitle"
-			],
-			[
-				"Chart",
-				"ChartConfig"
-			],
-			[
-				"Series",
-				"series1"
-			],
-			[
-				"genera",
-				"generate_series"
-			],
-			[
-				"Seri",
-				"SeriesCollection"
-			],
-			[
-				"chart",
-				"chart_config"
-			],
-			[
-				"split",
-				"split_attribute"
-			],
-			[
-				"_c",
-				"_customizations"
-			],
-			[
-				"Ru",
-				"RuntimeError"
-			],
-			[
-				"DY",
-				"DynamicOptions"
-			],
-			[
-				"names",
-				"names_for_defaults"
-			],
-			[
-				"Das",
-				"DashboardWidgetDSL"
 			]
 		]
 	},
 	"buffers":
 	[
+		{
+			"file": "spec/class_action_spec.rb",
+			"settings":
+			{
+				"buffer_size": 1594,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "lib/class_action.rb",
+			"settings":
+			{
+				"buffer_size": 1265,
+				"line_ending": "Unix"
+			}
+		}
 	],
 	"build_system": "Packages/User/RubyGem.sublime-build",
 	"command_palette":
@@ -596,6 +612,19 @@
 	},
 	"file_history":
 	[
+		"/Users/joost/Work/Flux/class-action/ClassAction.sublime-project",
+		"/Users/joost/Work/Flux/class-action/lib/class_action/action.rb",
+		"/Users/joost/Work/Flux/class-action/spec/class_action/action_spec.rb",
+		"/Users/joost/Work/Flux/class-action/README.md",
+		"/Users/joost/Work/Flux/class-action/lib/class_action.rb",
+		"/Users/joost/Work/Flux/class-action/lib/class_action/version.rb",
+		"/Users/joost/Work/Flux/class-action/spec/class_action_spec.rb",
+		"/Users/joost/Work/Flux/class-action/class-action.gemspec",
+		"/Users/joost/Work/Flux/class-action/spec/spec_helper.rb",
+		"/Users/joost/Work/Flux/class-action/spec/spec_helpers.rb",
+		"/Users/joost/Work/Flux/class-action/spec/class_action",
+		"/Users/joost/Work/Flux/class-action/lib/class-action.rb",
+		"/Users/joost/Work/Flux/class-action/lib/class_action/action/version.rb",
 		"/Users/joost/Work/Flux/flux-crm/app/views/dashboard/show.html.erb",
 		"/Users/joost/Work/Flux/flux-crm/app/views/dashboard/show.html.haml",
 		"/Users/joost/Work/Flux/flux-crm/app/views/dashboard/show.html.arb",
@@ -710,20 +739,7 @@
 		"/Users/joost/Work/Flux/flux/spec/flux/views/elements/fieldset_spec.rb",
 		"/Users/joost/Work/Flux/flux/spec/support/mock_model_support.rb",
 		"/Users/joost/Work/Flux/flux/lib/flux/fields/choice_renderers.rb",
-		"/Users/joost/Work/Flux/flux/lib/flux/filters/select_filter.rb",
-		"/Users/joost/Work/Flux/flux/lib/flux/extensions/enum-x.rb",
-		"/Users/joost/Work/Flux/flux/lib/flux/utilities/choice_collection.rb",
-		"/Users/joost/Work/Flux/flux/spec/flux/views/forms/list_fields_spec.rb",
-		"/Users/joost/Work/Flux/flux/spec/flux/utilities/choice_collection_spec.rb",
-		"/Users/joost/Work/Flux/flux/spec/flux/filters/select_filter_spec.rb",
-		"/Users/joost/Work/Flux/flux/lib/flux/views/forms/list_fields.rb",
-		"/Users/joost/Work/Flux/flux/spec/flux/utilities/choice_collection.rb",
-		"/Users/joost/Work/Flux/flux/spec/flux/dsl/resource_dsl_spec.rb",
-		"/Users/joost/Work/Flux/flux/lib/flux/helpers/text_helper.rb",
-		"/Users/joost/Work/Flux/flux/spec/support/example_groups/routing_example_group.rb",
-		"/Users/joost/Work/Flux/flux/spec/flux/views/forms/input_fields_spec.rb",
-		"/Users/joost/Work/Flux/flux/lib/flux/views/forms/field.rb",
-		"/Users/joost/Work/Flux/flux/spec/flux/views/forms/field_spec.rb"
+		"/Users/joost/Work/Flux/flux/lib/flux/filters/select_filter.rb"
 	],
 	"find":
 	{
@@ -869,6 +885,13 @@
 		"case_sensitive": true,
 		"find_history":
 		[
+			"execute",
+			"arg",
+			"my_var",
+			"execute",
+			"\n        end",
+			"controller_class",
+			"action_action",
 			"/ div",
 			"layout do\n\n#   head do\n#     # Add any additional meta tags here.\n#     # meta name: 'Author', content: 'Me!'\n\n#     stylesheet_link 'application'\n#   end\n\n#   body do\n#     # Customize the body tag. Note that the page has already been created, so you can prepend or append\n#     # items to the body tag.\n#     prepend { javascript_include 'application' }\n#     append { javascript_include 'ui/init' }\n#   end\n\n# end",
 			"/ ",
@@ -989,14 +1012,7 @@
 			"resource",
 			"account_resource",
 			"related_resource",
-			"resource",
-			"top_leads",
-			"sales_pie",
-			"top_leads",
-			"editable",
-			"sales_pie",
-			"sales_trends",
-			"widgets"
+			"resource"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -1142,8 +1158,65 @@
 	"groups":
 	[
 		{
+			"selected": 0,
 			"sheets":
 			[
+				{
+					"buffer": 0,
+					"file": "spec/class_action_spec.rb",
+					"settings":
+					{
+						"buffer_size": 1594,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1393,
+								1393
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Rails/Ruby on Rails.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 680.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "lib/class_action.rb",
+					"settings":
+					{
+						"buffer_size": 1265,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1009,
+								1009
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Ruby/Ruby.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 808.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				}
 			]
 		}
 	],
@@ -1200,6 +1273,14 @@
 		"height": 0.0,
 		"selected_items":
 		[
+			[
+				"classactionspec",
+				"spec/class_action_spec.rb"
+			],
+			[
+				"gemspec",
+				"class-action.gemspec"
+			],
 			[
 				"fluxap",
 				"app/assets/stylesheets/flux-app/_icons.scss"
@@ -1439,10 +1520,6 @@
 			[
 				"flux",
 				"bin/flux"
-			],
-			[
-				"gemspec",
-				"flux.gemspec"
 			],
 			[
 				"author",
@@ -1707,10 +1784,6 @@
 			[
 				"fieldspec",
 				"spec/flux/views/elements/field_spec.rb"
-			],
-			[
-				"buttonsspec",
-				"spec/flux/views/elements/buttons_spec.rb"
 			]
 		],
 		"width": 0.0
@@ -1720,6 +1793,10 @@
 		"height": 500.0,
 		"selected_items":
 		[
+			[
+				"fluxcrm",
+				"/Users/joost/Work/Flux/flux-crm/FluxCrm.sublime-project"
+			],
 			[
 				"platfo",
 				"/Users/joost/Work/Projects/Platform161/Core/Source/Platform161.sublime-project"

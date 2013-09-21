@@ -1,3 +1,4 @@
+require 'action_controller'
 require 'class-action'
 require 'rspec/autorun'
 
