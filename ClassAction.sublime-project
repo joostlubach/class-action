@@ -1,0 +1,10 @@
+{
+	"folders":
+	[
+		{
+			"path": "/Users/joost/Work/Flux/class-action",
+      "folder_exclude_patterns": [ "log", "tmp", "doc", ".yardoc", "tools", "coverage", ".zeus*" ],
+      "file_exclude_patterns": [ "*.sublime-workspace", "*.tmproj", "Gemfile.lock", ".*" ]
+		}
+	]
+}
