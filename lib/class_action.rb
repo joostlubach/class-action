@@ -44,7 +44,9 @@ module ClassAction
 
   module ClassMethods
 
-    def class_action(name, class_name: name.to_s.camelize)
+    def class_action(name, class_name: nil)
+      class_name ||= "#{self.name}::#{name.to_s.camelize}"
+
       class_eval <<-RUBY, __FILE__, __LINE__+1
         def #{name}
           _execute_class_action :#{name}, #{class_name}
@@ -67,15 +69,17 @@ module ClassAction
 
   private
 
-  def _execute_action_action(name, klass)
-    @_action_action = klass.new(self)
-    raise ActionNotAvailable unless action_action.available?
+  def _execute_class_action(name, klass)
+    @_class_action = klass.new(self)
+    raise ActionNotAvailable unless class_action.available?
 
-    # Execute the action.
-    action_action.execute
+    # Execute the action by running all public methods in order.
+    class_action.public_methods.each do |method|
+      class_action.send method
+    end
 
     # Copy any assigns back to the controller.
-    action_action.send :copy_assigns_to_controller
+    class_action.send :copy_assigns_to_controller
   end
 
 end

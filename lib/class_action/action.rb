@@ -1,5 +1,6 @@
 module ClassAction
 
+  # Base class for controller actions.
   class Action
 
     ######
@@ -50,7 +51,7 @@ module ClassAction
 
       end
 
-      controller_method :params, :request, :action_name, sync_assigns: false
+      controller_method :params, :request, sync_assigns: false
       controller_method :render, :respond_to, :respond_with, :redirect_to
 
       private
@@ -72,9 +73,9 @@ module ClassAction
     ######
     # Helper methods
 
-      class_attribute :helpers
-
       class << self
+
+        attr_accessor :helpers
 
         def inherited(klass)
           klass.helpers = Module.new
