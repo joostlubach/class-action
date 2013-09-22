@@ -1,17 +1,29 @@
 require 'spec_helper'
 
-class ClassActionTestController < ActionController::Base
-  include ClassAction
-
-  class Show < ClassAction::Action
-  end
-end
-
 describe ClassAction do
 
   let(:controller) { ClassActionTestController.new }
 
+  before do
+    Object.send :remove_const, :ClassActionTestController if defined?(ClassActionTestController)
+
+    class ::ClassActionTestController < ActionController::Base
+      include ClassAction
+
+      def self.logger
+        @logger ||= Logger.new(STDOUT)
+      end
+
+      class Show < ClassAction::Action
+      end
+
+      class OtherShow < ClassAction::Action
+      end
+    end
+  end
+
   context "adding a class action :show" do
+
     before { ClassActionTestController.class_eval { class_action :show } }
 
     it "should respond to method :show" do
@@ -47,6 +59,125 @@ describe ClassAction do
         controller.show
         expect(controller.view_assigns).not_to have_key('_class_action')
       end
+    end
+
+    context "giving another action class" do
+      before do
+        ClassActionTestController.class_eval do
+          class_action :show, klass: ClassActionTestController::OtherShow
+        end
+      end
+
+      it "should try to instantiate the given action class when executed" do
+        action = ClassActionTestController::OtherShow.new(controller)
+        expect(ClassActionTestController::OtherShow).to receive(:new).with(controller).and_return(action)
+        controller.show
+
+        expect(controller.class_action).to be(action)
+      end
+    end
+
+  end
+
+  describe "respond mime injection" do
+
+    before do
+      ClassActionTestController::Show.class_eval do
+        respond_to :html
+      end
+    end
+
+    it "should create mimes with :only => 'show' for nonexisting mimes" do
+      ClassActionTestController.class_eval { class_action :show }
+      ClassActionTestController.mimes_for_respond_to.should eql(
+        :html => {:only => %w[show]}
+      )
+    end
+
+    it "should append the action 'show' to existing mimes with an :only restriction" do
+      ClassActionTestController.class_eval do
+        respond_to :html, :only => [ :index ]
+        class_action :show
+      end
+
+      ClassActionTestController.mimes_for_respond_to.should eql(
+        :html => {:only => %w[index show]}
+      )
+    end
+
+    it "should not append the action 'show' to existing mimes with no :only restriction" do
+      ClassActionTestController.class_eval do
+        respond_to :html
+        class_action :show
+      end
+
+      ClassActionTestController.mimes_for_respond_to.should eql(
+        :html => {}
+      )
+    end
+
+    it "should not append the action 'show' if it was already targeted" do
+      ClassActionTestController.class_eval do
+        respond_to :html, :only => [ :show ]
+        class_action :show
+      end
+
+      ClassActionTestController.mimes_for_respond_to.should eql(
+        :html => { :only => %w[show] }
+      )
+    end
+
+    it "should not append the action 'show' if it was also already to the :except list (but log a warning)" do
+      expect(ClassActionTestController.logger).to receive(:warn).with("Warning: action show (ClassAction) responds to `html` but it does not accept this mime type")
+
+      ClassActionTestController.class_eval do
+        respond_to :html, :except => [ :show ]
+        class_action :show
+      end
+
+      ClassActionTestController.mimes_for_respond_to.should eql(
+        :html => { :except => %w[show] }
+      )
+    end
+
+    it "should exclude the action from any other mime types that may be defined" do
+      ClassActionTestController.class_eval do
+        respond_to :json
+        class_action :show
+      end
+
+      ClassActionTestController.mimes_for_respond_to.should eql(
+        :html => { :only => %w[show] },
+        :json => { :except => %w[show] }
+      )
+    end
+
+    it "should leave everything alone if the class action has no responders" do
+      allow(ClassActionTestController::Show).to receive(:responders).and_return({})
+
+      ClassActionTestController.class_eval do
+        respond_to :json
+        class_action :show
+      end
+
+      ClassActionTestController.mimes_for_respond_to.should eql(
+        :json => {}
+      )
+    end
+
+    it "should leave everything alone if the class action has an 'any' responder" do
+      ClassActionTestController::Show.class_eval do
+        respond_to_any
+      end
+
+      ClassActionTestController.class_eval do
+        respond_to :json
+        class_action :show
+      end
+
+      ClassActionTestController.mimes_for_respond_to.should eql(
+        :json => {}
+      )
     end
 
   end

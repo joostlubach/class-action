@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe ClassAction::Action do
 
-  let(:controller) { double(:controller, :view_assigns => {}) }
+  let(:controller) { double(:controller, :view_assigns => {}, :response_body => nil) }
   let(:action_class) { Class.new(ClassAction::Action) }
   let(:action) { action_class.new(controller) }
 
@@ -119,7 +119,45 @@ describe ClassAction::Action do
       expect(called).to eql([:method1, :method2])
     end
 
-    it "should copy all instance variables into the controller at the end" do
+    it "should stop executing when a response body is set" do
+      called = []; response_body = nil
+
+      allow(controller).to receive(:response_body) { response_body }
+      expect(action_class).to receive(:action_methods).and_return([:method1, :method2])
+      expect(action).to receive(:method1) { called << :method1; response_body = '<html></html>' }
+      expect(action).not_to receive(:method2)
+
+      action._execute
+      expect(called).to eql([:method1])
+    end
+
+    it "should call _respond at the end" do
+      called = []
+
+      expect(action_class).to receive(:action_methods).and_return([:method1, :method2])
+      expect(action).to receive(:method1) { called << :method1 }
+      expect(action).to receive(:method2) { called << :method2 }
+      expect(action).to receive(:_respond) { called << :_respond }
+
+      action._execute
+      expect(called).to eql([:method1, :method2, :_respond])
+    end
+
+    it "should not call _respond if a response body is set" do
+      allow(controller).to receive(:response_body).and_return('<html></html>')
+      expect(action).not_to receive(:_respond)
+      action._execute
+    end
+
+  end
+
+  describe '#_respond' do
+
+    # Note - as _respond is a private method, we will call _execute to test
+    # this method. _execute does not perform other actions if no public methods
+    # are defined.
+
+    it "should always copy assignment variables back to the controller" do
       action_class.class_eval do
         def set_ivar
           @my_var = :test
@@ -130,8 +168,97 @@ describe ClassAction::Action do
       action._execute
     end
 
+    context "with no respond with or responders" do
+      it "should not call a respond method, but copy all instance variables into the controller at the end" do
+        expect(controller).not_to receive(:respond_with)
+        expect(controller).not_to receive(:respond_to)
+        action._execute
+      end
+    end
+
+    context "having set a respond_with" do
+      let(:response) { double(:response) }
+      before do
+        action_class.class_eval do
+          respond_with :response
+        end
+        expect(action).to receive(:response).and_return(response)
+      end
+
+      it "should call the respond_with method and use it in the response" do
+        expect(controller).to receive(:respond_with).with(response) do |&blk|
+          expect(blk).to be_nil
+        end
+
+        action._execute
+      end
+
+      it "should use the _respond_block if it is set" do
+        block = proc{}
+        allow(action).to receive(:_respond_block).and_return(block)
+
+        expect(controller).to receive(:respond_with).with(response) do |&blk|
+          expect(blk).to be(block)
+        end
+
+        action._execute
+      end
+
+    end
+
+    context "having set _respond_block" do
+
+      it "should use the _respond_block" do
+        block = proc{}
+        allow(action).to receive(:_respond_block).and_return(block)
+
+        expect(controller).to receive(:respond_to) do |&blk|
+          expect(blk).to be(block)
+        end
+
+        action._execute
+      end
+
+    end
+
   end
 
+  describe 'responders & _respond_block' do
 
+    # Private method, but specced individually to make spec terser.
+
+    let(:respond_block) { action.send(:_respond_block) }
+
+    it "should create a block using the given responders, which is executed on the action" do
+      called = nil; receiver = nil
+      json_block = proc { receiver = self; called = :json }
+      html_block = proc { receiver = self; called = :html }
+      any_block = proc { receiver = self; called = :any }
+
+      action_class.class_eval do
+        respond_to :json, &json_block
+        respond_to :html, &html_block
+        respond_to_any &any_block
+      end
+
+      # Simulate ActionController's format collector.
+      collector = Class.new{ attr_reader :json_block, :html_block, :any_block }.new
+      def collector.json(&block) @json_block = block end
+      def collector.html(&block) @html_block = block end
+      def collector.any(&block) @any_block = block end
+
+      respond_block.call collector
+
+      collector.json_block.call
+      expect(receiver).to be(action); expect(called).to be(:json)
+
+      collector.html_block.call
+      expect(receiver).to be(action); expect(called).to be(:html)
+
+      collector.any_block.call
+      expect(receiver).to be(action); expect(called).to be(:any)
+    end
+
+  end
 
 end

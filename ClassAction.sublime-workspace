@@ -520,18 +520,10 @@
 	"buffers":
 	[
 		{
-			"file": "spec/class_action_spec.rb",
+			"file": "lib/class_action/action.rb",
 			"settings":
 			{
-				"buffer_size": 1594,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "lib/class_action.rb",
-			"settings":
-			{
-				"buffer_size": 1265,
+				"buffer_size": 3437,
 				"line_ending": "Unix"
 			}
 		}
@@ -612,15 +604,15 @@
 	},
 	"file_history":
 	[
+		"/Users/joost/Work/Flux/class-action/lib/class_action.rb",
+		"/Users/joost/Work/Flux/class-action/spec/class_action_spec.rb",
+		"/Users/joost/Work/Flux/class-action/spec/spec_helper.rb",
 		"/Users/joost/Work/Flux/class-action/ClassAction.sublime-project",
 		"/Users/joost/Work/Flux/class-action/lib/class_action/action.rb",
 		"/Users/joost/Work/Flux/class-action/spec/class_action/action_spec.rb",
 		"/Users/joost/Work/Flux/class-action/README.md",
-		"/Users/joost/Work/Flux/class-action/lib/class_action.rb",
 		"/Users/joost/Work/Flux/class-action/lib/class_action/version.rb",
-		"/Users/joost/Work/Flux/class-action/spec/class_action_spec.rb",
 		"/Users/joost/Work/Flux/class-action/class-action.gemspec",
-		"/Users/joost/Work/Flux/class-action/spec/spec_helper.rb",
 		"/Users/joost/Work/Flux/class-action/spec/spec_helpers.rb",
 		"/Users/joost/Work/Flux/class-action/spec/class_action",
 		"/Users/joost/Work/Flux/class-action/lib/class-action.rb",
@@ -1163,46 +1155,18 @@
 			[
 				{
 					"buffer": 0,
-					"file": "spec/class_action_spec.rb",
+					"file": "lib/class_action/action.rb",
 					"settings":
 					{
-						"buffer_size": 1594,
+						"buffer_size": 3437,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1393,
-								1393
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Rails/Ruby on Rails.tmLanguage",
-							"tab_size": 2,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 680.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 1,
-					"file": "lib/class_action.rb",
-					"settings":
-					{
-						"buffer_size": 1265,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1009,
-								1009
+								2363,
+								2363
 							]
 						],
 						"settings":
@@ -1212,7 +1176,7 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 808.0,
+						"translation.y": 1880.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
@@ -1273,6 +1237,14 @@
 		"height": 0.0,
 		"selected_items":
 		[
+			[
+				"action.rb",
+				"lib/class_action/action.rb"
+			],
+			[
+				"spechelper",
+				"spec/spec_helper.rb"
+			],
 			[
 				"classactionspec",
 				"spec/class_action_spec.rb"
@@ -1472,10 +1444,6 @@
 			[
 				"chartspec",
 				"spec/flux/definitions/chart_spec.rb"
-			],
-			[
-				"spechelper",
-				"spec/spec_helper.rb"
 			],
 			[
 				"dashboardcontroller",
@@ -1780,10 +1748,6 @@
 			[
 				"fieldtogglespec",
 				"spec/flux/views/elements/field_toggle_spec.rb"
-			],
-			[
-				"fieldspec",
-				"spec/flux/views/elements/field_spec.rb"
 			]
 		],
 		"width": 0.0
@@ -1793,6 +1757,14 @@
 		"height": 500.0,
 		"selected_items":
 		[
+			[
+				"",
+				"/Users/joost/Work/Flux/flux-crm/FluxCrm.sublime-project"
+			],
+			[
+				"flux",
+				"/Users/joost/Work/Flux/flux-crm/FluxCrm.sublime-project"
+			],
 			[
 				"fluxcrm",
 				"/Users/joost/Work/Flux/flux-crm/FluxCrm.sublime-project"
@@ -1831,10 +1803,6 @@
 			],
 			[
 				"platform161",
-				"/Users/joost/Work/Projects/Platform161/Core/Source/Platform161.sublime-project"
-			],
-			[
-				"",
 				"/Users/joost/Work/Projects/Platform161/Core/Source/Platform161.sublime-project"
 			],
 			[

@@ -7,18 +7,18 @@ module ClassAction
     # Initialization
 
       def initialize(controller)
-        @controller = controller
+        @_controller = controller
       end
 
     ######
     # Attributes
 
-      attr_reader :controller
-      protected :controller
+      attr_internal_reader :controller
 
       def available?
         true
       end
+      protected :controller, :available?
 
     ######
     # Controller method exposure
@@ -47,14 +47,14 @@ module ClassAction
 
         def action_methods
           methods  = public_instance_methods
-          methods -= [ :available?, :_execute ]
+          methods -= [ :_execute ]
           methods -= Object.public_instance_methods
           methods
         end
 
       end
 
-      controller_method :params, :request, sync_assigns: false
+      controller_method :params, :request, :format, sync_assigns: false
       controller_method :render, :redirect_to, :respond_to, :respond_with
 
     ######
@@ -89,9 +89,69 @@ module ClassAction
         # Execute the action by running all public methods in order.
         self.class.action_methods.each do |method|
           send method
+
+          # Break execution of the action when some response body is set.
+          # E.g. when the action decides to redirect halfway.
+          break if controller.response_body
         end
 
+        # Perform a default response if not done so yet.
+        _respond unless controller.response_body
+      end
+
+      private
+
+      def _respond
         copy_assigns_to_controller
+
+        if self.class.respond_with_method
+          response_object = send(self.class.respond_with_method)
+          controller.respond_with response_object, &_respond_block
+        elsif _respond_block
+          controller.respond_to &_respond_block
+        end
+      end
+
+      def _respond_block
+        responders = self.class.responders
+        return if responders.none? { |format, block| !!block }
+
+        action = self
+        proc do |collector|
+          responders.each do |format, block|
+            next unless block
+            collector.send(format) do
+              action.instance_exec &block
+            end
+          end
+        end
+      end
+
+
+    ######
+    # Responding
+
+      class << self
+
+        attr_accessor :respond_with_method
+        def responders
+          @reponders ||= {}
+        end
+
+        def respond_with(method)
+          self.respond_with_method = method
+        end
+
+        def respond_to(*formats, &block)
+          formats.each do |format|
+            responders[format.to_sym] = block
+          end
+        end
+
+        def respond_to_any(&block)
+          respond_to :any, &block
+        end
+
       end
 
     ######
@@ -107,7 +167,7 @@ module ClassAction
 
       def copy_assigns_to_controller
         ivars  = instance_variables
-        ivars -= [ :@controller ]
+        ivars -= [ :@_controller, :@_responders, :@_default_responder ]
         ivars.each do |ivar|
           controller.instance_variable_set ivar, instance_variable_get(ivar)
         end
