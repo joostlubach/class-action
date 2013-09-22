@@ -64,7 +64,7 @@ module ClassAction
 
     def include_class_action_in_mime_type(mime, restrictions, action)
       if restrictions && restrictions[:except] && restrictions[:except].include?(action)
-        logger.warn "Warning: action #{action} (ClassAction) responds to `#{mime}` but it does not accept this mime type"
+        logger.warn "Warning: action #{action} (ClassAction) responds to `#{mime}` but it does not accept this mime type" if logger
       elsif restrictions && restrictions[:only] && !restrictions[:only].include?(action)
         restrictions[:only] << action
       end
