@@ -38,6 +38,26 @@ describe ClassAction::Action do
       expect(controller).to receive(:class_action).and_return(action)
       expect(obj.helper1).to eql('HELPER RESULT')
     end
+
+    it "should also expose helper methods defined in a superclass" do
+      action_class.class_eval do
+        def helper1
+          'HELPER1'
+        end
+        helper_method :helper1
+      end
+      action_subclass = Class.new(action_class) do
+        def helper2
+          'HELPER2'
+        end
+        helper_method :helper2
+      end
+
+      obj= Class.new{ include action_subclass.helpers }.new
+      expect(obj).to respond_to(:helper1)
+      expect(obj).to respond_to(:helper2)
+    end
+
   end
 
   describe '.controller_method' do
@@ -257,6 +277,29 @@ describe ClassAction::Action do
 
       collector.any_block.call
       expect(receiver).to be(action); expect(called).to be(:any)
+    end
+
+    it "should take responders to a subclass" do
+      action_class.class_eval do
+        respond_to :html
+      end
+      action_subclass = Class.new(action_class) do
+        respond_to :json
+      end
+
+      expect(action_subclass.responders).to eql(
+        :html => nil,
+        :json => nil
+      )
+    end
+
+    it "should copy the respond_with_method to a subclass" do
+      action_class.class_eval do
+        respond_with :post
+      end
+
+      action_subclass = Class.new(action_class)
+      expect(action_subclass.respond_with_method).to be(:post)
     end
 
   end

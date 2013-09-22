@@ -58,29 +58,6 @@ module ClassAction
       controller_method :render, :redirect_to, :respond_to, :respond_with
 
     ######
-    # Helper methods
-
-      class << self
-
-        attr_accessor :helpers
-
-        def inherited(klass)
-          klass.helpers = Module.new
-        end
-
-        def helper_method(*methods)
-          methods.each do |method|
-            helpers.class_eval <<-RUBY, __FILE__, __LINE__+1
-              def #{method}(*args, &block)
-                controller.class_action.send(:#{method}, *args, &block)
-              end
-            RUBY
-          end
-        end
-
-      end
-
-    ######
     # Execution
 
       def _execute
@@ -127,15 +104,52 @@ module ClassAction
         end
       end
 
+    class << self
 
-    ######
-    # Responding
+      def inherited(klass)
+        # When inheriting an action, copy all information from the base class.
 
-      class << self
+        own_helpers = self.helpers
+        klass.helpers = Module.new { include own_helpers }
+        klass.responders = responders.dup
+        klass.respond_with_method = respond_with_method
+      end
 
-        attr_accessor :respond_with_method
+      ######
+      # Helpers
+
+        attr_accessor :helpers
+        def helpers
+          @helpers ||= Module.new.tap do |helpers|
+            helpers.send :include, superclass.helpers if superclass.respond_to?(:helpers)
+          end
+        end
+
+        def helper_method(*methods)
+          methods.each do |method|
+            helpers.class_eval <<-RUBY, __FILE__, __LINE__+1
+              def #{method}(*args, &block)
+                controller.class_action.send(:#{method}, *args, &block)
+              end
+            RUBY
+          end
+        end
+
+      ######
+      # Responders
+
+        attr_accessor :responders, :respond_with_method
+
+        def respond_with_method
+          @respond_with_method ||= if superclass.respond_to?(:respond_with_method)
+            superclass.respond_with_method
+          end
+        end
+
         def responders
-          @reponders ||= {}
+          @reponders ||= {}.tap do |responders|
+            responders.update superclass.responders if superclass.respond_to?(:responders)
+          end
         end
 
         def respond_with(method)
@@ -152,7 +166,7 @@ module ClassAction
           respond_to :any, &block
         end
 
-      end
+    end
 
     ######
     # Assigns
