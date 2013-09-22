@@ -14,6 +14,11 @@
 /.bundle
 /.env
 
+# RVM files
+.rvmrc
+.ruby-version
+.ruby-gemset
+
 # Ignore all logfiles and tempfiles.
 /tmp
 
