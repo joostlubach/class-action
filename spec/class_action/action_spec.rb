@@ -60,18 +60,23 @@ describe ClassAction::Action do
 
   end
 
-  describe '.controller_method' do
-    before { allow(controller).to receive(:load_post) }
-    before { action_class.class_eval { controller_method :load_post } }
+  describe 'controller methods' do
+    let(:result) { double(:result) }
+    before { allow(controller).to receive(:load_post).and_return(result) }
 
-    it "should create a protected method :load_post" do
-      expect(action.protected_methods).to include(:load_post)
+    it "should make the action respond to :load_post, but protectedly" do
+      expect(action).not_to respond_to(:load_post)
+      expect(action.respond_to?(:load_post, true)).to be_true # matcher doesn't work with second argument
     end
 
-    it "should create a proxy to the controller" do
-      result = double(:result)
-      expect(controller).to receive(:load_post).and_return(result)
-      expect(action.send(:load_post)).to be(result)
+    it "should pass the method :load_post on to the controller" do
+      expect(action.load_post).to be(result)
+    end
+
+    it "should create a protected method :load_post the first time it is called" do
+      expect(action.protected_methods).not_to include(:load_post)
+      action.load_post
+      expect(action.protected_methods).to include(:load_post)
     end
 
     it "should copy assigns to the controller before executing the controller method, and copy them back afterwards" do
@@ -88,7 +93,6 @@ describe ClassAction::Action do
       end
 
       action_class.class_eval do
-        controller_method :increase_var
         def execute
           @var = 2
           increase_var
@@ -118,7 +122,7 @@ describe ClassAction::Action do
         def method4; end
       end
 
-      expect(action_class.action_methods).to eql([ :method1, :method2 ])
+      expect(action_class._action_methods).to eql([ :method1, :method2 ])
     end
   end
 
@@ -131,7 +135,7 @@ describe ClassAction::Action do
     it "should execute all action methods in the action, and call #copy_assigns_to_controller finally" do
       called = []
 
-      expect(action_class).to receive(:action_methods).and_return([:method1, :method2])
+      expect(action_class).to receive(:_action_methods).and_return([:method1, :method2])
       expect(action).to receive(:method1) { called << :method1 }
       expect(action).to receive(:method2) { called << :method2 }
 
@@ -143,7 +147,7 @@ describe ClassAction::Action do
       called = []; response_body = nil
 
       allow(controller).to receive(:response_body) { response_body }
-      expect(action_class).to receive(:action_methods).and_return([:method1, :method2])
+      expect(action_class).to receive(:_action_methods).and_return([:method1, :method2])
       expect(action).to receive(:method1) { called << :method1; response_body = '<html></html>' }
       expect(action).not_to receive(:method2)
 
@@ -154,7 +158,7 @@ describe ClassAction::Action do
     it "should call _respond at the end" do
       called = []
 
-      expect(action_class).to receive(:action_methods).and_return([:method1, :method2])
+      expect(action_class).to receive(:_action_methods).and_return([:method1, :method2])
       expect(action).to receive(:method1) { called << :method1 }
       expect(action).to receive(:method2) { called << :method2 }
       expect(action).to receive(:_respond) { called << :_respond }
@@ -188,7 +192,7 @@ describe ClassAction::Action do
       action._execute
     end
 
-    context "with no respond with or responders" do
+    context "with no response method or responders" do
       it "should not call a respond method, but copy all instance variables into the controller at the end" do
         expect(controller).not_to receive(:respond_with)
         expect(controller).not_to receive(:respond_to)
@@ -196,16 +200,21 @@ describe ClassAction::Action do
       end
     end
 
-    context "having set a respond_with" do
+    context "having set a response method" do
       let(:response) { double(:response) }
       before do
         action_class.class_eval do
           respond_with :response
+          respond_with :invalid_response, on: :invalid
+
+          protected
+
+          def invalid?() false end
         end
-        expect(action).to receive(:response).and_return(response)
       end
 
-      it "should call the respond_with method and use it in the response" do
+      it "should use the value of #response" do
+        expect(action).to receive(:response).and_return(response)
         expect(controller).to receive(:respond_with).with(response) do |&blk|
           expect(blk).to be_nil
         end
@@ -213,10 +222,18 @@ describe ClassAction::Action do
         action._execute
       end
 
+      it "should use the value of #invalid_response if invalid? returns true" do
+        allow(action).to receive(:invalid?).and_return(true)
+        expect(action).to receive(:invalid_response).and_return(response)
+        expect(controller).to receive(:respond_with).with(response)
+        action._execute
+      end
+
       it "should use the _respond_block if it is set" do
         block = proc{}
         allow(action).to receive(:_respond_block).and_return(block)
 
+        expect(action).to receive(:response).and_return(response)
         expect(controller).to receive(:respond_with).with(response) do |&blk|
           expect(blk).to be(block)
         end
@@ -247,18 +264,29 @@ describe ClassAction::Action do
 
     # Private method, but specced individually to make spec terser.
 
-    let(:respond_block) { action.send(:_respond_block) }
+    def respond_block
+      action.send(:_respond_block)
+    end
 
     it "should create a block using the given responders, which is executed on the action" do
       called = nil; receiver = nil
       json_block = proc { receiver = self; called = :json }
       html_block = proc { receiver = self; called = :html }
-      any_block = proc { receiver = self; called = :any }
+      html_invalid_block = proc { receiver = self; called = :html_invalid }
+      any_ok_block = proc { receiver = self; called = :any_ok }
 
       action_class.class_eval do
         respond_to :json, &json_block
         respond_to :html, &html_block
-        respond_to_any &any_block
+        respond_to :html, on: :invalid, &html_invalid_block
+        respond_to_any on: :ok, &any_ok_block
+
+        attr_accessor :status
+
+        protected
+
+          def ok?() status == :ok end
+          def invalid?() status == :invalid end
       end
 
       # Simulate ActionController's format collector.
@@ -267,16 +295,37 @@ describe ClassAction::Action do
       def collector.html(&block) @html_block = block end
       def collector.any(&block) @any_block = block end
 
+      action.status = :ok
       respond_block.call collector
-
       collector.json_block.call
       expect(receiver).to be(action); expect(called).to be(:json)
 
+      action.status = :invalid
+      respond_block.call collector
+      collector.json_block.call
+      expect(receiver).to be(action); expect(called).to be(:json)
+
+      action.status = :ok
+      respond_block.call collector
       collector.html_block.call
       expect(receiver).to be(action); expect(called).to be(:html)
 
+      action.status = :invalid
+      respond_block.call collector
+      collector.html_block.call
+      expect(receiver).to be(action); expect(called).to be(:html_invalid)
+
+      action.status = :ok
+      respond_block.call collector
       collector.any_block.call
-      expect(receiver).to be(action); expect(called).to be(:any)
+      expect(receiver).to be(action); expect(called).to be(:any_ok)
+
+      receiver = nil
+      called = nil
+
+      action.status = :invalid
+      expect(collector).not_to receive(:any)
+      respond_block.call collector
     end
 
     it "should take responders to a subclass" do
@@ -287,9 +336,9 @@ describe ClassAction::Action do
         respond_to :json
       end
 
-      expect(action_subclass.responders).to eql(
-        :html => nil,
-        :json => nil
+      expect(action_subclass._responders).to eql(
+        [ :html, nil ] => nil,
+        [ :json, nil ] => nil
       )
     end
 
@@ -299,7 +348,9 @@ describe ClassAction::Action do
       end
 
       action_subclass = Class.new(action_class)
-      expect(action_subclass.respond_with_method).to be(:post)
+      expect(action_subclass).to have(1)._response
+      expect(action_subclass._responses.keys[0]).to be_nil
+      expect(action_subclass._responses.values[0]).to be(:post)
     end
 
   end

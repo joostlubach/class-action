@@ -1,3 +1,5 @@
+require 'active_support/core_ext/object/try'
+
 module ClassAction
 
   # Base class for controller actions.
@@ -26,26 +28,40 @@ module ClassAction
       class << self
 
         # Exposes the given controller methods into the action.
-        def controller_method(*methods, sync_assigns: true)
-          if sync_assigns
-            assigns_copy_to   = "copy_assigns_to_controller"
-            assigns_copy_from = "copy_assigns_from_controller"
-          end
-
-          methods.each do |method|
-            class_eval <<-RUBY, __FILE__, __LINE__+1
-              def #{method}(*args, &block)
-                #{assigns_copy_to}
-                controller.send :#{method}, *args, &block
-              ensure
-                #{assigns_copy_from}
-              end
-              protected :#{method}
-            RUBY
-          end
+        def _controller_method(method)
+          class_eval <<-RUBY, __FILE__, __LINE__+1
+            def #{method}(*args, &block)
+              copy_assigns_to_controller
+              controller.send :#{method}, *args, &block
+            ensure
+              copy_assigns_from_controller
+            end
+            protected :#{method}
+          RUBY
         end
 
-        def action_methods
+      end
+
+      def respond_to?(method, include_private = false)
+        super || (include_private && controller.respond_to?(method, true))
+      end
+
+      def method_missing(method, *args, &block)
+        if controller.respond_to?(method, true)
+          self.class._controller_method method
+          send method, *args, &block
+        else
+          super
+        end
+      end
+      private :method_missing
+
+    ######
+    # Execution
+
+      class << self
+
+        def _action_methods
           methods  = public_instance_methods
           methods -= [ :_execute ]
           methods -= Object.public_instance_methods
@@ -54,17 +70,11 @@ module ClassAction
 
       end
 
-      controller_method :params, :request, :format, sync_assigns: false
-      controller_method :render, :redirect_to, :respond_to, :respond_with
-
-    ######
-    # Execution
-
       def _execute
         raise ActionNotAvailable unless available?
 
         # Execute the action by running all public methods in order.
-        self.class.action_methods.each do |method|
+        self.class._action_methods.each do |method|
           send method
 
           # Break execution of the action when some response body is set.
@@ -81,22 +91,29 @@ module ClassAction
       def _respond
         copy_assigns_to_controller
 
-        if self.class.respond_with_method
-          response_object = send(self.class.respond_with_method)
-          controller.respond_with response_object, &_respond_block
+        response = self.class._responses.find do |on, response|
+          !on || send(:"#{on}?")
+        end.try(:last)
+
+        if response
+          controller.respond_with send(response), &_respond_block
         elsif _respond_block
           controller.respond_to &_respond_block
         end
       end
 
       def _respond_block
-        responders = self.class.responders
-        return if responders.none? { |format, block| !!block }
+        responders = {}
+        self.class._responders.each do |(format, on), block|
+          # Select only those responders that have a block, and for which no precondition is set, or
+          # one that matches the current action state.
+          responders[format] ||= block if block && (!on || send(:"#{on}?"))
+        end
+        return if responders.empty?
 
         action = self
         proc do |collector|
           responders.each do |format, block|
-            next unless block
             collector.send(format) do
               action.instance_exec &block
             end
@@ -105,15 +122,6 @@ module ClassAction
       end
 
     class << self
-
-      def inherited(klass)
-        # When inheriting an action, copy all information from the base class.
-
-        own_helpers = self.helpers
-        klass.helpers = Module.new { include own_helpers }
-        klass.responders = responders.dup
-        klass.respond_with_method = respond_with_method
-      end
 
       ######
       # Helpers
@@ -138,32 +146,43 @@ module ClassAction
       ######
       # Responders
 
-        attr_accessor :responders, :respond_with_method
+        attr_reader :_responders, :_responses
 
-        def respond_with_method
-          @respond_with_method ||= if superclass.respond_to?(:respond_with_method)
-            superclass.respond_with_method
+        def _responses
+          @_responses ||= {}.tap do |responses|
+            responses.reverse_merge! superclass._responses if superclass.respond_to?(:_responses)
           end
+
+          # Keep the hash in such an order that the 'nil' condition is always *last*.
+          # { :ok => 1, nil => 2, :invalid => 3 } => { :ok => 1, :invalid => 3, nil => 2 }
+          @_responses = Hash[ *@_responses.sort_by { |on, _method| on.nil? ? 1 : 0 }.flatten ]
         end
 
-        def responders
-          @reponders ||= {}.tap do |responders|
-            responders.update superclass.responders if superclass.respond_to?(:responders)
+        def _responders
+          @_responders ||= {}.tap do |responders|
+            responders.reverse_merge! superclass._responders if superclass.respond_to?(:_responders)
           end
+
+          # Keep the hash in such an order that the 'nil' conditions are always *last*.
+          # { [ (:html, nil) => 1, (:json, nil) => 2, (:html, :ok) => 3 } => { (:html, :ok) => 3, (:html, nil) => 1, (:json, nil) => 2 }
+          @_responders = Hash[ *@_responders.sort_by { |(format, on), _method| on.nil? ? 1 : 0 }.inject([]) { |arr, (key, value)| arr << key << value } ]
         end
 
-        def respond_with(method)
-          self.respond_with_method = method
+        # Defines a method that returns the response. Specify an optional precondition in the `on` parameter.
+        def respond_with(method, on: nil)
+          _responses[on.try(:to_sym)] = method
         end
 
-        def respond_to(*formats, &block)
+        # Defines a response block for the given format(s). Specify an optional precondition in the `on` parameter.
+        def respond_to(*formats, on: nil, &block)
           formats.each do |format|
-            responders[format.to_sym] = block
+            _responders[ [format.to_sym, on.try(:to_sym)] ] = block
           end
         end
 
-        def respond_to_any(&block)
-          respond_to :any, &block
+        # Defines a response block for any remaining format. Specify an optional precondition in the `on` parameter.
+        def respond_to_any(on: nil, &block)
+          respond_to :any, on: on, &block
         end
 
     end
