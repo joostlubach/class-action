@@ -229,6 +229,15 @@ describe ClassAction::Action do
         action._execute
       end
 
+      it "should read an instance variable if this is set" do
+        action_class.class_eval do
+          respond_with :@response
+        end
+        action.instance_variable_set '@response', response
+        expect(controller).to receive(:respond_with).with(response)
+        action._execute
+      end
+
       it "should use the _respond_block if it is set" do
         block = proc{}
         allow(action).to receive(:_respond_block).and_return(block)

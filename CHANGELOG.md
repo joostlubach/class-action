@@ -1,8 +1,12 @@
-## ClassAction 1.0.0 ##
+## ClassAction 1.0.0.rc1 ##
 
 *   Automatic controller method inferral
 
     - No need to write `controller_method`
+
+    *Joost Lubach*
+
+*   Instance variable references allowed in `respond_with`
 
     *Joost Lubach*
 

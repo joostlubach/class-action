@@ -39,15 +39,10 @@ In your controller, make sure you have included `ClassAction`, and declare which
 
 Then, create your `show` action class (the default is to name this class `PostsController::Show`, but you may customize this).
 
-All *public* methods are executed in order when the action is run. Any support methods you need, you will need to make protected. You may also declare that you need some controller methods.
-
-Some default controller methods (`params`, `request`, `render`, `redirect_to`, `respond_to` and `respond_with`) are available at all times.
+All *public* methods are executed in order when the action is run. Any support methods you need, you will need to make protected. Also, all controller methods are available in the action.
 
     class PostController
       class Show < ClassAction::Action
-
-        # We need this method from the controller.
-        controller_method :current_user
 
         def prepare
           load_post
@@ -124,9 +119,7 @@ This employs the use of `ActionController#respond_to`. Additionally, there is su
 
     class Show < ClassAction::Action
 
-      controller_method :post
-
-      respond_with :post
+      respond_with :@post
       respond_to :html, :json
 
       respond_to :text do
@@ -142,7 +135,7 @@ is roughly equivalent to:
       respond_to :html, :json, :text, :only => [ :show ]
 
       def show
-        respond_with post do |format|
+        respond_with @post do |format|
           format.text do
             render :text => @post.to_yaml
           end
@@ -151,13 +144,51 @@ is roughly equivalent to:
 
     end
 
+Note that the value you pass to `respond_with` may be a simple symbol (e.g. `:post`) for a method or a reference to an instance variable (e.g. `:@post`).
+
 In other words, using `respond_with` in conjunction with `respond_to` allows you to:
 
-1. Specify which method to use to obtain the response object (the first argument to `ActionController#respond_with`). Note that this method must exist on the action, or must be exposed using `controller_method`.
+1. Specify which method to use to obtain the response object (the first argument to `ActionController#respond_with`). Note that this method must exist on the action or controller.
 2. Specify the formats that this action responds to. `ClassAction` will make sure that the controller mime types are modified accordingly.
 3. Create a custom responder block in one breath.
 
 The only caveat is that you have to specify all your controller-level `respond_to` declarations *before* defining your actions using `class_action`, or you might override the `respond_to` array of your controller.
+
+### State based responses
+
+In some cases you may want a certain response method (`respond_with`) or responder block (`respond_to`) to be only available in a certain case. For example, in some update action, you may want a different response based on whether the object was saved successfully.
+
+Limiting a response method or reponder block this way is possible through the `on:` option in the methods `respond_with` and `respond_to`. The value of this option should correspond to a question-mark method on your action (or controller).
+
+For example:
+
+    class Update < ClassAction::Action
+
+      respond_with :@post
+      respond_to :html, on: :failure do
+        render :edit, :status => :unprocessable_entity
+      end
+
+      protected
+
+        def success?
+          @post.errors.blank?
+        end
+        def failure?
+          @post.errors.present?
+        end
+
+    end
+
+This will effectively perform the following response logic on the controller:
+
+    if @post.errors.blank?
+      respond_with @post
+    elsif @post.errors.present?
+      respond_with @post do |format|
+        format.html { render :edit, :status => :unprocessable_entity }
+      end
+    end
 
 ## Contributing
 

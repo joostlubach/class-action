@@ -96,7 +96,13 @@ module ClassAction
         end.try(:last)
 
         if response
-          controller.respond_with send(response), &_respond_block
+          response_object = if response =~ /^@/
+            instance_variable_get(response)
+          else
+            send(response)
+          end
+
+          controller.respond_with response_object, &_respond_block
         elsif _respond_block
           controller.respond_to &_respond_block
         end
