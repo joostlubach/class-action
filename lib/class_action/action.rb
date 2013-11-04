@@ -15,7 +15,9 @@ module ClassAction
     ######
     # Attributes
 
-      attr_internal_reader :controller
+      def controller
+        @_controller
+      end
 
       def available?
         true
