@@ -153,7 +153,7 @@ describe ClassAction do
     end
 
     it "should leave everything alone if the class action has no responders" do
-      allow(ClassActionTestController::Show).to receive(:responders).and_return({})
+      allow(ClassActionTestController::Show).to receive(:_responders).and_return({})
 
       ClassActionTestController.class_eval do
         respond_to :json

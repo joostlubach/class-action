@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    class-action (0.0.2)
+    class-action (1.0.0.rc1)
       activesupport (~> 3.2)
 
 GEM

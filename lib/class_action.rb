@@ -43,18 +43,18 @@ module ClassAction
     # mimes_for_respond_to hash.
     def inject_class_action_mimes(action, klass)
       # If no responders or a default responder is given, we don't do anything.
-      return if klass.responders.empty? || klass.responders.has_key?(:any)
+      return if klass._responders.empty? || klass._responders.any? { |(mime, _condition), _block| mime == :any }
 
       mimes = mimes_for_respond_to.dup
 
       # Make sure no extra mimes are allowed for the action.
       mimes.each do |mime, restrictions|
-        next if klass.responders.key?(mime)
+        next if klass._responders.any? { |(m, _codition), _block| m == mime }
         exclude_class_action_in_mime_type mime, restrictions, action
       end
 
       # Include all action mimes.
-      klass.responders.each do |mime, _block|
+      klass._responders.each do |(mime, _condition), _block|
         mimes[mime] ||= { :only => [] }
         include_class_action_in_mime_type mime, mimes[mime], action
       end
