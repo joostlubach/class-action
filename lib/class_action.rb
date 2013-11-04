@@ -90,6 +90,10 @@ module ClassAction
 
   private
 
+  def _class_action
+    @_class_action
+  end
+
   def _execute_class_action(name, klass)
     @_class_action = klass.new(self)
     @_class_action._execute

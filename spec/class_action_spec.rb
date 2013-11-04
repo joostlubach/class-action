@@ -59,6 +59,12 @@ describe ClassAction do
         controller.show
         expect(controller.view_assigns).not_to have_key('_class_action')
       end
+
+      it "should expose the current action as #_class_action" do
+        controller.show
+        expect(controller.send(:_class_action)).to be(action)
+      end
+
     end
 
     context "giving another action class" do
