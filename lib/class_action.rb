@@ -29,7 +29,7 @@ module ClassAction
 
         class_eval <<-RUBY, __FILE__, __LINE__+1
           def #{action}
-            _execute_class_action :#{action}, #{action_class.name}
+            _execute_class_action #{action_class.name}
           end
         RUBY
 
@@ -94,7 +94,7 @@ module ClassAction
     @_class_action
   end
 
-  def _execute_class_action(name, klass)
+  def _execute_class_action(klass)
     @_class_action = klass.new(self)
     @_class_action._execute
   end
