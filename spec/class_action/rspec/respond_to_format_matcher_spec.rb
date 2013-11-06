@@ -46,13 +46,11 @@ describe ClassAction::RSpec::RespondToFormatMatcher do
     it "should first execute the response block for a given format" do
       action = RespondToTestClassAction2.new(controller)
 
-      called = false
+      response_block_called = false
       expect(action).to respond_to_format(:html) do
-        response_block_called = action.instance_variable_get('@responded_to_html')
-        expect(response_block_called).to be_true
-        called = true
+        response_block_called = controller.instance_variable_get('@responded_to_html')
       end
-      expect(called).to be_true
+      expect(response_block_called).to be_true
     end
 
   end

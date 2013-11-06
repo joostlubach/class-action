@@ -337,6 +337,21 @@ describe ClassAction::Action do
       respond_block.call collector
     end
 
+    it "should copy assigns back to the controller after responding" do
+      action_class.class_eval do
+        respond_to :html do
+          @my_var = :value
+        end
+      end
+
+      collector = Class.new{ attr_reader :html_block }.new
+      def collector.html(&block) @html_block = block end
+      respond_block.call collector
+
+      collector.html_block.call
+      expect(controller.instance_variable_get('@my_var')).to be(:value)
+    end
+
     it "should take responders to a subclass" do
       action_class.class_eval do
         respond_to :html

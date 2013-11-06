@@ -23,6 +23,7 @@ module ClassAction
             # block, for this.
             respond_block = action.class._responders[ [@format, @condition] ]
             action.instance_exec &respond_block if respond_block
+            action.send :copy_assigns_to_controller
             block.call
           end
 

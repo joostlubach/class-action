@@ -124,6 +124,7 @@ module ClassAction
           responders.each do |format, block|
             collector.send(format) do
               action.instance_exec &block
+              copy_assigns_to_controller
             end
           end
         end
