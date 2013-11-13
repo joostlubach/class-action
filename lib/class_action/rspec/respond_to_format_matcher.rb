@@ -66,4 +66,7 @@ RSpec::Matchers.module_eval do
   def respond_to_format(format)
     ClassAction::RSpec::RespondToFormatMatcher.new(format)
   end
+  def respond_to_any_format
+    ClassAction::RSpec::RespondToFormatMatcher.new(:any)
+  end
 end
