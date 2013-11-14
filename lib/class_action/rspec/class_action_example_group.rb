@@ -6,6 +6,7 @@ module ClassAction
       def self.included(target)
         target.send :include, ::RSpec::Rails::ControllerExampleGroup
         target.extend ClassMethods
+        target.send :include, InstanceMethods
 
         target.class_eval do
           # I don't know why ControllerExampleGroup overrides this.
@@ -30,8 +31,20 @@ module ClassAction
         end
       end
 
-      def action
-        @action ||= self.class.action_class.new(@controller)
+      module InstanceMethods
+        def action
+          @action ||= self.class.action_class.new(@controller)
+        end
+
+        def assigns(*)
+          action.send :copy_assigns_to_controller
+          super
+        end
+      end
+
+      def assigns
+        @action.send :copy_assigns_to_controller
+        super
       end
 
     end
