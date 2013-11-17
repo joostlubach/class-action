@@ -14,34 +14,16 @@ module ClassAction
 
       def matches?(controller)
         @controller = controller
-        @reason = :unsupported and return false unless controller.respond_to?(:_execute_class_action, true)
-        @result = :not_an_action and return false unless controller.respond_to?(@action_name)
+        @reason = :unsupported and return false unless controller.respond_to?(:_class_action, true)
+        @reason = :not_an_action and return false unless controller.respond_to?(@action_name)
+        @reason = :not_a_class_action and return false unless controller.respond_to?(:"_#{@action_name}_action_class", true)
 
-        # Temporarily replace the controller's implementation of _execute_class_action
-        # for the purpose of testing this. Restore it afterwards.
-        prev_method = controller.method(:_execute_class_action)
-
-        received_klass = nil
-        controller.class.send :define_method, :_execute_class_action do |klass|
-          received_klass = klass
+        if @klass
+          @found_class = controller.send(:"_#{@action_name}_action_class").class
+          @reason = :incorrect_class and return false if @found_class != @klass
         end
 
-        # Test invoking the action now.
-        controller.send @action_name
-
-        if received_klass.nil?
-          @reason = :not_a_class_action
-          false
-        elsif @klass && received_klass != @klass
-          @found_class = received_klass
-          @reason = :incorrect_class
-          false
-        else
-          true
-        end
-      ensure
-        # Restore the original method here.
-        controller.class.send :define_method, :_execute_class_action, prev_method if prev_method
+        true
       end
 
       def description

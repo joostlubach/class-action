@@ -62,6 +62,7 @@ describe ClassAction do
 
       it "should expose the current action as #_class_action" do
         controller.show
+        allow(controller).to receive(:action_name).and_return('show')
         expect(controller.send(:_class_action)).to be(action)
       end
 

@@ -28,8 +28,13 @@ module ClassAction
         raise ArgumentError, "ClassAction does not support anonymous classes" if action_class.name.nil?
 
         class_eval <<-RUBY, __FILE__, __LINE__+1
+          def _#{action}_action_class
+            @_class_action ||= #{action_class.name}.new self
+          end
+          private :_#{action}_action_class
+
           def #{action}
-            _execute_class_action #{action_class.name}
+            _#{action}_action_class._execute
           end
         RUBY
 
@@ -91,12 +96,7 @@ module ClassAction
   private
 
   def _class_action
-    @_class_action
-  end
-
-  def _execute_class_action(klass)
-    @_class_action = klass.new(self)
-    @_class_action._execute
+    send(:"_#{action_name}_action_class")
   end
 
 end
