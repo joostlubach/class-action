@@ -77,6 +77,8 @@ module ClassAction
 
         # Execute the action by running all public methods in order.
         self.class._action_methods.each do |method|
+          next if self.method(method).arity != 0
+
           send method
 
           # Break execution of the action when some response body is set.

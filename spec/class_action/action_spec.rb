@@ -136,21 +136,64 @@ describe ClassAction::Action do
       called = []
 
       expect(action_class).to receive(:_action_methods).and_return([:method1, :method2])
-      expect(action).to receive(:method1) { called << :method1 }
-      expect(action).to receive(:method2) { called << :method2 }
 
+      action_class.class_eval do
+        def method1
+          @called << :method1
+        end
+        def method2
+          @called << :method2
+        end
+      end
+
+      action.instance_variable_set '@called', called
       action._execute
       expect(called).to eql([:method1, :method2])
+    end
+
+    it "should skip methods that take arguments" do
+      action_class.class_eval do
+        def one
+          @called = []
+          @called << :one
+        end
+        def two(*args)
+          @called << :two
+        end
+        def three(arg)
+          @called << :three
+        end
+        def three(arg = nil)
+          @called << :four
+        end
+      end
+
+      action._execute
+      called = action.instance_variable_get('@called')
+      expect(called).to eql([:one])
     end
 
     it "should stop executing when a response body is set" do
       called = []; response_body = nil
 
       allow(controller).to receive(:response_body) { response_body }
-      expect(action_class).to receive(:_action_methods).and_return([:method1, :method2])
-      expect(action).to receive(:method1) { called << :method1; response_body = '<html></html>' }
-      expect(action).not_to receive(:method2)
+      allow(controller).to receive(:response).and_return(double())
+      allow(controller.response).to receive(:body) { response_body }
+      allow(controller.response).to receive(:body=) { |val| response_body = val }
 
+      expect(action_class).to receive(:_action_methods).and_return([:method1, :method2])
+
+      action_class.class_eval do
+        def method1
+          @called << :method1
+          response.body = '<html></html>'
+        end
+        def method2
+          @called << :method2
+        end
+      end
+
+      action.instance_variable_set '@called', called
       action._execute
       expect(called).to eql([:method1])
     end
@@ -159,10 +202,19 @@ describe ClassAction::Action do
       called = []
 
       expect(action_class).to receive(:_action_methods).and_return([:method1, :method2])
-      expect(action).to receive(:method1) { called << :method1 }
-      expect(action).to receive(:method2) { called << :method2 }
+
+      action_class.class_eval do
+        def method1
+          @called << :method1
+        end
+        def method2
+          @called << :method2
+        end
+      end
+
       expect(action).to receive(:_respond) { called << :_respond }
 
+      action.instance_variable_set '@called', called
       action._execute
       expect(called).to eql([:method1, :method2, :_respond])
     end
