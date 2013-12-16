@@ -10,6 +10,7 @@ module ClassAction
 
       def initialize(controller)
         @_controller = controller
+        @_controller.singleton_class.send :include, self.class.helpers
       end
 
     ######
@@ -148,6 +149,11 @@ module ClassAction
           methods.each do |method|
             helpers.class_eval <<-RUBY, __FILE__, __LINE__+1
               def #{method}(*args, &block)
+                controller = if respond_to?(:class_action)
+                  self
+                else
+                  self.controller
+                end
                 controller.class_action.send(:#{method}, *args, &block)
               end
             RUBY

@@ -1,3 +1,9 @@
+require 'simplecov'
+
+SimpleCov.start do
+  add_filter '/spec'
+end
+
 require 'action_controller'
 require 'class-action'
 require 'rspec/autorun'

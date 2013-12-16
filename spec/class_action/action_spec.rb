@@ -5,6 +5,7 @@ describe ClassAction::Action do
   let(:controller) { double(:controller, :view_assigns => {}, :response_body => nil) }
   let(:action_class) { Class.new(ClassAction::Action) }
   let(:action) { action_class.new(controller) }
+  before { allow(controller).to receive(:class_action).and_return(action) }
 
   it "should by default be available" do
     expect(action).to be_available
@@ -15,14 +16,16 @@ describe ClassAction::Action do
       expect(action_class.helpers).to be_a(Module)
     end
 
-    it "should define the helper method in the action's helpers module, which should call the method on the controller action" do
+    before do
       action_class.class_eval do
         def helper1
           'HELPER RESULT'
         end
         helper_method :helper1
       end
+    end
 
+    it "should define the helper method in the action's helpers module, which should call the method on the controller action" do
       helpers = action_class.helpers
       klass = Class.new do
         include helpers
@@ -39,13 +42,13 @@ describe ClassAction::Action do
       expect(obj.helper1).to eql('HELPER RESULT')
     end
 
+    it "should also expose helper methods on the controller" do
+      action # Load the action up to include the helpers module.
+      expect(controller).to respond_to(:helper1)
+      expect(controller.helper1).to eql('HELPER RESULT')
+    end
+
     it "should also expose helper methods defined in a superclass" do
-      action_class.class_eval do
-        def helper1
-          'HELPER1'
-        end
-        helper_method :helper1
-      end
       action_subclass = Class.new(action_class) do
         def helper2
           'HELPER2'
