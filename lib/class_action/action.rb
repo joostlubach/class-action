@@ -1,4 +1,5 @@
 require 'active_support/core_ext/object/try'
+require 'active_support/core_ext/hash/reverse_merge'
 
 module ClassAction
 
@@ -167,7 +168,7 @@ module ClassAction
 
         def _responses
           @_responses ||= {}.tap do |responses|
-            responses.reverse_merge! superclass._responses if superclass.respond_to?(:_responses)
+            responses.reverse_update superclass._responses if superclass.respond_to?(:_responses)
           end
 
           # Keep the hash in such an order that the 'nil' condition is always *last*.
@@ -177,7 +178,7 @@ module ClassAction
 
         def _responders
           @_responders ||= {}.tap do |responders|
-            responders.reverse_merge! superclass._responders if superclass.respond_to?(:_responders)
+            responders.reverse_update superclass._responders if superclass.respond_to?(:_responders)
           end
 
           # Keep the hash in such an order that the 'nil' conditions are always *last*.

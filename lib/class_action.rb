@@ -102,7 +102,7 @@ module ClassAction
 end
 
 if defined?(AbstractController::Rendering::DEFAULT_PROTECTED_INSTANCE_VARIABLES)
-  AbstractController::Rendering::DEFAULT_PROTECTED_INSTANCE_VARIABLES << '@_class_action'
+  AbstractController::Rendering::DEFAULT_PROTECTED_INSTANCE_VARIABLES << :@_class_action
 end
 
 require 'class_action/version'

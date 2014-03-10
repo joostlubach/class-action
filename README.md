@@ -9,6 +9,8 @@ Additional benefits include:
 * Action-specific helper methods
 * Support for responders (future support)
 
+[<img src="https://secure.travis-ci.org/yoazt/class-action.png?branch=master" alt="Build Status" />](http://travis-ci.org/yoazt/class-action)
+
 ## Installation
 
 Add this line to your application's Gemfile:
