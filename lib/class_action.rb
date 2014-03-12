@@ -42,6 +42,22 @@ module ClassAction
       end
     end
 
+    # Delegates the given method to the current class action.
+    def class_action_delegate(*methods)
+      file, line = caller.first.split(':', 2)
+      line = line.to_i
+
+      methods.each do |method|
+        definition = (method =~ /[^\]]=$/) ? 'arg' : '*args, &block'
+
+        module_eval(<<-RUBY, file, line)
+          def #{method}(#{definition})
+            class_action.send :#{method}, #{definition}
+          end
+        RUBY
+      end
+    end
+
     private
 
     # Injects the mimes (formats) that the action responds to into the controller

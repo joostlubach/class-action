@@ -189,4 +189,26 @@ describe ClassAction do
 
   end
 
+  describe 'method delegation' do
+
+    it "should allow delegating a method to the current class action" do
+      ClassActionTestController.class_eval do
+        class_action :show
+        class_action_delegate :one, :two
+      end
+
+      action_class = Class.new do
+        def one; :one end
+        def two; :two end
+        protected :two
+      end
+
+      allow(controller).to receive(:class_action).and_return(action_class.new)
+      expect(controller.one).to be(:one)
+      expect(controller.two).to be(:two)
+      expect{controller.three}.to raise_error(NoMethodError)
+    end
+
+  end
+
 end
