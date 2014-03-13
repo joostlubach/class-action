@@ -52,7 +52,7 @@ module ClassAction
 
         module_eval(<<-RUBY, file, line)
           def #{method}(#{definition})
-            class_action.send :#{method}, #{definition}
+            _class_action.send :#{method}, #{definition}
           end
         RUBY
       end

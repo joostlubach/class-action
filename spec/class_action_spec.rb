@@ -203,7 +203,7 @@ describe ClassAction do
         protected :two
       end
 
-      allow(controller).to receive(:class_action).and_return(action_class.new)
+      allow(controller).to receive(:_class_action).and_return(action_class.new)
       expect(controller.one).to be(:one)
       expect(controller.two).to be(:two)
       expect{controller.three}.to raise_error(NoMethodError)
