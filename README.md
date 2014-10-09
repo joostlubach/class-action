@@ -37,6 +37,26 @@ In your controller, make sure you have included `ClassAction`, and declare which
       class_action :show
     end
 
+### Organize your files
+
+ClassAction comes with an autoloading mechanism for actions. If you have the following file structure:
+
+    - app
+      |- controllers
+         |- posts_controller.rb
+            |- actions
+               |- index_action.rb
+               |- show_action.rb
+
+You need to tell ClassAction where the actions are located. You can do that by setting variable `action_load_path`:
+
+    class PostsController
+      include ClassAction
+      self.action_load_path += File.expand_path('../actions/*.rb', __FILE__)
+
+      class_action :index, :show
+    end
+
 ### Create an action
 
 Then, create your `show` action class (the default is to name this class `PostsController::Show`, but you may customize this).
@@ -117,7 +137,7 @@ However, `ClassAction` provides a bit more support for responses. You may define
 
     end
 
-This employs the use of `ActionController#respond_to`. Additionally, there is support for the Rails 3 style `respond_with`. To illustrate, this:
+This employs the use of `ActionController#respond_to`. Additionally, there is support for the Rails 3+ style `respond_with`. To illustrate, this:
 
     class Show < ClassAction::Action
 

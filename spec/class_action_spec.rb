@@ -22,6 +22,64 @@ describe ClassAction do
     end
   end
 
+  describe 'lazy loading' do
+
+    let(:action_load_path) { %w(app/controllers/my_controller/actions/*.rb app/controllers/my_controller/other_actions/*.rb) }
+
+    before do
+      # Fake three files
+      allow(Dir).to receive(:glob).with(action_load_path[0]).and_return(
+        ['app/controllers/my_controller/actions/first_action.rb']
+      )
+      allow(Dir).to receive(:glob).with(action_load_path[1]).and_return(
+        ['app/controllers/my_controller/actions/second_action.rb', 'app/controllers/my_controller/actions/third_action.rb']
+      )
+
+      allow(ActiveSupport::Dependencies).to receive(:require) do |arg|
+        case arg
+          when 'app/controllers/my_controller/actions/first_action.rb'
+            class ::ClassActionTestController::FirstAction < ActionController::Base; end
+
+          when 'app/controllers/my_controller/actions/second_action.rb'
+            # Incorrect name
+            class ::ClassActionTestController::NotSecondAction < ActionController::Base; end
+
+          when 'app/controllers/my_controller/actions/third_action.rb'
+            class ::ClassActionTestController::ThirdAction < ActionController::Base; end
+        end
+      end
+    end
+
+    before do
+      allow(ClassActionTestController).to receive(:action_load_path).and_return(action_load_path)
+    end
+
+    it "should raise an error if the class is not found and no load path is specified" do
+      allow(ClassActionTestController).to receive(:action_load_path).and_return([])
+      expect { ClassActionTestController.send(:find_action_class, :first) }
+        .to raise_error("action class ClassActionTestController::FirstAction not found and no action_load_path defined")
+    end
+
+    it "should find FirstAction" do
+      expect(ClassActionTestController.send(:find_action_class, :first)).to be(ClassActionTestController::FirstAction)
+    end
+
+    it "should find ThirdAction" do
+      expect(ClassActionTestController.send(:find_action_class, :third)).to be(ClassActionTestController::ThirdAction)
+    end
+
+    it "should raise an error if no file was found in the load path" do
+      expect { ClassActionTestController.send(:find_action_class, :fourth) }
+        .to raise_error(LoadError, "file 'fourth_action.rb' not found in the load path for ClassActionTestController")
+    end
+
+    it "should raise an error on second as the wrong class is defined there" do
+      expect { ClassActionTestController.send(:find_action_class, :second) }
+        .to raise_error(LoadError, "expected file 'app/controllers/my_controller/actions/second_action.rb' to define action class SecondAction but it was not defined")
+    end
+
+  end
+
   context "adding a class action :show" do
 
     before { ClassActionTestController.class_eval { class_action :show } }

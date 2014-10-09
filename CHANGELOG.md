@@ -1,3 +1,7 @@
+## 1.3.2 ##
+
+*   Autoloading mechanism added
+
 ## 1.3.1 ##
 
 *   Upgrade to Rails 4.1 and RSpec 3.1

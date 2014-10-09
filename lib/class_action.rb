@@ -8,6 +8,7 @@ module ClassAction
   class << self
     def included(target)
       target.extend ClassMethods
+      target.action_load_path = []
       setup target
     end
 
@@ -22,9 +23,11 @@ module ClassAction
 
   module ClassMethods
 
+    attr_accessor :action_load_path
+
     def class_action(*actions, klass: nil)
       actions.each do |action|
-        action_class = klass || const_get("#{action.to_s.camelize}Action")
+        action_class = klass || find_action_class(action)
         raise ArgumentError, "ClassAction does not support anonymous classes" if action_class.name.nil?
 
         class_eval <<-RUBY, __FILE__, __LINE__+1
@@ -58,7 +61,48 @@ module ClassAction
       end
     end
 
+    protected
+
+    def find_action_class(action)
+      class_name = "#{action.to_s.camelize}Action"
+      return const_get(class_name) if const_defined?(class_name)
+
+      if action_load_path.present?
+        load_action_class action
+      else
+        raise LoadError, "action class #{name}::#{class_name} not found and no action_load_path defined"
+      end
+    end
+
     private
+
+    def load_action_class(action)
+      basename = "#{action}_action"
+
+      path = path_for_action(basename) or
+        raise LoadError, "file '#{basename}.rb' not found in the load path for #{name}"
+
+      # Require the path
+      ActiveSupport::Dependencies.require path
+
+      # Try again
+      class_name = basename.camelize
+      if const_defined?(class_name)
+        const_get(class_name)
+      else
+        raise LoadError, "expected file '#{path}' to define action class #{class_name} but it was not defined"
+      end
+    end
+
+    def path_for_action(basename)
+      [*action_load_path].each do |path|
+        path = Dir.glob(path).find do |p|
+          File.basename(p, '.rb') == basename
+        end
+        return path if path
+      end
+      nil
+    end
 
     # Injects the mimes (formats) that the action responds to into the controller
     # mimes_for_respond_to hash.
