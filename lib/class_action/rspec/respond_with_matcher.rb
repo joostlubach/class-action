@@ -26,7 +26,7 @@ module ClassAction
         end
       end
 
-      def failure_message_for_should
+      def failure_message
         suffix = if @actual
           ", but it responds with :#{@actual}"
         else
@@ -40,7 +40,7 @@ module ClassAction
         end
       end
 
-      def failure_message_for_should_not
+      def failure_message_when_negated
         if @condition
           "expected action of class #{@action.class} not to respond with :#{@expected} on :#{@condition}"
         else

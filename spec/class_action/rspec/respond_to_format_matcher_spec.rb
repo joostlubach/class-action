@@ -40,7 +40,7 @@ describe ClassAction::RSpec::RespondToFormatMatcher do
       expect(action).to respond_to_format(:json) do
         called = true
       end
-      expect(called).to be_true
+      expect(called).to be_truthy
     end
 
     it "should first execute the response block for a given format" do
@@ -50,7 +50,7 @@ describe ClassAction::RSpec::RespondToFormatMatcher do
       expect(action).to respond_to_format(:html) do
         response_block_called = controller.instance_variable_get('@responded_to_html')
       end
-      expect(response_block_called).to be_true
+      expect(response_block_called).to be_truthy
     end
 
   end

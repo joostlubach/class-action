@@ -34,7 +34,7 @@ module ClassAction
         end
       end
 
-      def failure_message_for_should
+      def failure_message
         case @reason
         when :unsupported
           "expected controller of class #{@controller.class} to have class action :#{@action_name}, but it does not support class actions"
@@ -47,7 +47,7 @@ module ClassAction
         end
       end
 
-      def failure_message_for_should_not
+      def failure_message_when_negated
         if @klass
           "expected #{@controller.class}##{@action_name} not to be a class action using class #{@klass}"
         else

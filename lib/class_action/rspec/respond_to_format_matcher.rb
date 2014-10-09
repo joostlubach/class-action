@@ -41,7 +41,7 @@ module ClassAction
         end
       end
 
-      def failure_message_for_should
+      def failure_message
         if @condition
           "expected action of class #{@action.class} to respond to format :#{@format} on :#{@condition}"
         else
@@ -49,7 +49,7 @@ module ClassAction
         end
       end
 
-      def failure_message_for_should_not
+      def failure_message_when_negated
         if @condition
           "expected action of class #{@action.class} not to respond to format :#{@format} on :#{@condition}"
         else

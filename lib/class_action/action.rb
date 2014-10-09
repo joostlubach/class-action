@@ -20,11 +20,11 @@ module ClassAction
       def controller
         @_controller
       end
+      protected :controller
 
       def available?
         true
       end
-      protected :controller, :available?
 
     ######
     # Controller method exposure
@@ -67,7 +67,7 @@ module ClassAction
 
         def _action_methods
           methods  = public_instance_methods
-          methods -= [ :_execute ]
+          methods -= [ :_execute, :available? ]
           methods -= Object.public_instance_methods
           methods
         end

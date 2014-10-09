@@ -1,3 +1,7 @@
+## 1.3.1 ##
+
+*   Upgrade to Rails 4.1 and RSpec 3.1
+
 ## 1.3.0 ##
 
 *   Rename default actions class names to be suffixed with 'Action'.

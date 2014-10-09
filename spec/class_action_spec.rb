@@ -96,7 +96,7 @@ describe ClassAction do
 
     it "should create mimes with :only => 'show' for nonexisting mimes" do
       ClassActionTestController.class_eval { class_action :show }
-      ClassActionTestController.mimes_for_respond_to.should eql(
+      expect(ClassActionTestController.mimes_for_respond_to).to eql(
         :html => {:only => %w[show]}
       )
     end
@@ -107,7 +107,7 @@ describe ClassAction do
         class_action :show
       end
 
-      ClassActionTestController.mimes_for_respond_to.should eql(
+      expect(ClassActionTestController.mimes_for_respond_to).to eql(
         :html => {:only => %w[index show]}
       )
     end
@@ -118,7 +118,7 @@ describe ClassAction do
         class_action :show
       end
 
-      ClassActionTestController.mimes_for_respond_to.should eql(
+      expect(ClassActionTestController.mimes_for_respond_to).to eql(
         :html => {}
       )
     end
@@ -129,7 +129,7 @@ describe ClassAction do
         class_action :show
       end
 
-      ClassActionTestController.mimes_for_respond_to.should eql(
+      expect(ClassActionTestController.mimes_for_respond_to).to eql(
         :html => { :only => %w[show] }
       )
     end
@@ -142,7 +142,7 @@ describe ClassAction do
         class_action :show
       end
 
-      ClassActionTestController.mimes_for_respond_to.should eql(
+      expect(ClassActionTestController.mimes_for_respond_to).to eql(
         :html => { :except => %w[show] }
       )
     end
@@ -153,7 +153,7 @@ describe ClassAction do
         class_action :show
       end
 
-      ClassActionTestController.mimes_for_respond_to.should eql(
+      expect(ClassActionTestController.mimes_for_respond_to).to eql(
         :html => { :only => %w[show] },
         :json => { :except => %w[show] }
       )
@@ -167,7 +167,7 @@ describe ClassAction do
         class_action :show
       end
 
-      ClassActionTestController.mimes_for_respond_to.should eql(
+      expect(ClassActionTestController.mimes_for_respond_to).to eql(
         :json => {}
       )
     end
@@ -182,7 +182,7 @@ describe ClassAction do
         class_action :show
       end
 
-      ClassActionTestController.mimes_for_respond_to.should eql(
+      expect(ClassActionTestController.mimes_for_respond_to).to eql(
         :json => {}
       )
     end

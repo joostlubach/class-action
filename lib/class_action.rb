@@ -109,16 +109,16 @@ module ClassAction
     view_context
   end
 
+  def _protected_ivars # :nodoc:
+    super + %i(@_class_action)
+  end
+
   private
 
   def _class_action
     send(:"_#{action_name}_action_class")
   end
 
-end
-
-if defined?(AbstractController::Rendering::DEFAULT_PROTECTED_INSTANCE_VARIABLES)
-  AbstractController::Rendering::DEFAULT_PROTECTED_INSTANCE_VARIABLES << :@_class_action
 end
 
 require 'class_action/version'

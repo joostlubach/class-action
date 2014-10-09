@@ -69,7 +69,7 @@ describe ClassAction::Action do
 
     it "should make the action respond to :load_post, but protectedly" do
       expect(action).not_to respond_to(:load_post)
-      expect(action.respond_to?(:load_post, true)).to be_true # matcher doesn't work with second argument
+      expect(action.respond_to?(:load_post, true)).to be_truthy # matcher doesn't work with second argument
     end
 
     it "should pass the method :load_post on to the controller" do
@@ -427,9 +427,7 @@ describe ClassAction::Action do
       end
 
       action_subclass = Class.new(action_class)
-      expect(action_subclass).to have(1)._response
-      expect(action_subclass._responses.keys[0]).to be_nil
-      expect(action_subclass._responses.values[0]).to be(:post)
+      expect(action_subclass._responses).to match({nil => :post})
     end
 
   end
