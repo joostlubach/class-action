@@ -1,3 +1,7 @@
+## 1.3.0 ##
+
+*   Rename default actions class names to be suffixed with 'Action'.
+
 ## 1.1.0 ##
 
 *   Early class action resolution

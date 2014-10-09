@@ -4,7 +4,11 @@ require 'class_action/rspec'
 describe ClassAction::RSpec::HaveClassActionMatcher do
 
   class ClassActionTestController < ActionController::Base
-    class Index < ClassAction::Action
+    class IndexAction < ClassAction::Action
+    end
+    class Index2Action < ClassAction::Action
+    end
+    class OtherIndex2Action < ClassAction::Action
     end
   end
 
@@ -52,16 +56,13 @@ describe ClassAction::RSpec::HaveClassActionMatcher do
 
     it "should fail if the controller's index action uses a different class" do
       ClassActionTestController.class_eval do
-        class Index2 < ClassAction::Action
-        end
-
-        class_action :index2, Index2
+        class_action :index2, klass: ClassActionTestController::OtherIndex2Action
       end
 
-      expect { expect(controller).to have_class_action(:index2).using_class(ClassActionTestController::Index) }.to \
+      expect { expect(controller).to have_class_action(:index2).using_class(ClassActionTestController::Index2Action) }.to \
         raise_error(
           RSpec::Expectations::ExpectationNotMetError,
-          "expected action ClassActionTestController#index2 to use class ClassActionTestController::Index, but it used Index2"
+          "expected action ClassActionTestController#index2 to use class ClassActionTestController::Index2Action, but it used ClassActionTestController::OtherIndex2Action"
         )
     end
   end

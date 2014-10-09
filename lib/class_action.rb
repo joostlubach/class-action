@@ -24,7 +24,7 @@ module ClassAction
 
     def class_action(*actions, klass: nil)
       actions.each do |action|
-        action_class = klass || const_get(action.to_s.camelize)
+        action_class = klass || const_get("#{action.to_s.camelize}Action")
         raise ArgumentError, "ClassAction does not support anonymous classes" if action_class.name.nil?
 
         class_eval <<-RUBY, __FILE__, __LINE__+1

@@ -14,10 +14,10 @@ describe ClassAction do
         @logger ||= Logger.new(STDOUT)
       end
 
-      class Show < ClassAction::Action
+      class ShowAction < ClassAction::Action
       end
 
-      class OtherShow < ClassAction::Action
+      class OtherShowAction < ClassAction::Action
       end
     end
   end
@@ -43,9 +43,9 @@ describe ClassAction do
 
     context "when executing the action" do
       let(:action) { action = double(:action, :_execute => nil) }
-      before { expect(ClassActionTestController::Show).to receive(:new).with(controller).and_return(action) }
+      before { expect(ClassActionTestController::ShowAction).to receive(:new).with(controller).and_return(action) }
 
-      it "should try to instantiate TestController::Show and execute it" do
+      it "should try to instantiate TestController::ShowAction and execute it" do
         expect(action).to receive(:_execute)
         controller.show
       end
@@ -71,13 +71,13 @@ describe ClassAction do
     context "giving another action class" do
       before do
         ClassActionTestController.class_eval do
-          class_action :show, klass: ClassActionTestController::OtherShow
+          class_action :show, klass: ClassActionTestController::OtherShowAction
         end
       end
 
       it "should try to instantiate the given action class when executed" do
-        action = ClassActionTestController::OtherShow.new(controller)
-        expect(ClassActionTestController::OtherShow).to receive(:new).with(controller).and_return(action)
+        action = ClassActionTestController::OtherShowAction.new(controller)
+        expect(ClassActionTestController::OtherShowAction).to receive(:new).with(controller).and_return(action)
         controller.show
 
         expect(controller.class_action).to be(action)
@@ -89,7 +89,7 @@ describe ClassAction do
   describe "respond mime injection" do
 
     before do
-      ClassActionTestController::Show.class_eval do
+      ClassActionTestController::ShowAction.class_eval do
         respond_to :html
       end
     end
@@ -160,7 +160,7 @@ describe ClassAction do
     end
 
     it "should leave everything alone if the class action has no responders" do
-      allow(ClassActionTestController::Show).to receive(:_responders).and_return({})
+      allow(ClassActionTestController::ShowAction).to receive(:_responders).and_return({})
 
       ClassActionTestController.class_eval do
         respond_to :json
@@ -173,7 +173,7 @@ describe ClassAction do
     end
 
     it "should leave everything alone if the class action has an 'any' responder" do
-      ClassActionTestController::Show.class_eval do
+      ClassActionTestController::ShowAction.class_eval do
         respond_to_any
       end
 
