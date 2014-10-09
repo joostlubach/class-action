@@ -52,7 +52,7 @@ You need to tell ClassAction where the actions are located. You can do that by s
 
     class PostsController
       include ClassAction
-      self.action_load_path += File.expand_path('../actions/*.rb', __FILE__)
+      self.action_load_path << File.expand_path('../actions/*.rb', __FILE__)
 
       class_action :index, :show
     end
